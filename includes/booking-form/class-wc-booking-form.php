@@ -751,32 +751,41 @@ class WC_Booking_Form {
 			'time'        => date( 'YmdHi', $timestamp ),
 		);
 	}
-
+   
 	/**
 	 * Calculate costs from posted values
 	 * @param  array $posted
 	 * @return string cost
 	 */
 	public function calculate_booking_cost( $posted ) {
+		$arrayToString = print_r($posted, TRUE);
+		error_log( "Calcualte booking cost accessed.");
+		error_log($arrayToString);
 		if ( ! empty( $this->booking_cost ) ) {
+			$arrayToString = print_r($this);
 			return $this->booking_cost;
 		}
 
 		// Get costs
 		$costs              = $this->product->get_costs();
+		$costs_print 		= print_r($costs, true);
 
 		// Get posted data
 		$data               = $this->get_posted_data( $posted );
+		error_log(print_r($data,true));
 		$validate           = $this->is_bookable( $data );
 
 		if ( is_wp_error( $validate ) ) {
 			return $validate;
 		}
 
-		$base_cost          = max( 0, $this->product->get_cost() );
-		$base_block_cost    = max( 0, $this->product->get_block_cost() );
+		$base_cost          = max( 0, $this->product->get_cost() );			// These are entered in admin panel
+		$base_block_cost    = max( 0, $this->product->get_block_cost() );   //
 		$total_block_cost   = 0;
 		$person_block_costs = 0;
+		
+		error_log("base_cost: {$base_cost}");
+		error_log("base_block_cost: {$base_block_cost}");
 
 		// See if we have an auto_assigned_resource_id
 		if ( isset( $this->auto_assigned_resource_id ) ) {
@@ -816,9 +825,14 @@ class WC_Booking_Form {
 		$block_unit               = $this->product->get_duration_unit();
 		$blocks_booked            = isset( $data['_duration'] ) ? absint( $data['_duration'] ) : $block_duration;
 		$block_timestamp          = $data['_start_date'];
+		
+		error_log("block_duration: {$block_duration}");
+		error_log("block_unit: {$block_unit}");
+		error_log("blocks_booked: {$blocks_booked}");
 
 		if ( $this->product->is_duration_type( 'fixed' ) ) {
 			$blocks_booked = ceil( $blocks_booked / $block_duration );
+			error_log("Fixed duration, blocks_booked: {$blocks_booked}");
 		}
 
 		$buffer_period = $this->product->get_buffer_period();

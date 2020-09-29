@@ -17,6 +17,7 @@ class WC_Bookings_Create {
 	 * @version  1.10.7
 	 */
 	public function output() {
+		error_log("wc-bookings-create.php output()");
 		$this->errors = array();
 		$step         = 1;
 

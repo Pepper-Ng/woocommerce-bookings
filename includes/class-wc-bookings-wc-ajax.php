@@ -152,6 +152,7 @@ class WC_Bookings_WC_Ajax {
 	 * This endpoint is supposed to replace the back-end logic in booking-form.
 	 */
 	public function find_booked_day_blocks() {
+		error_log("wc-ajax: Find_booked_day_blocks");
 		check_ajax_referer( 'find-booked-day-blocks', 'security' );
 
 		$product_id = absint( $_GET['product_id'] );
@@ -162,9 +163,14 @@ class WC_Bookings_WC_Ajax {
 		}
 
 		try {
-
 			$args                          = array();
-			$product                       = new WC_Product_Booking( $product_id );
+			
+			// Accommodation booking functionality, H&K Camperverhuur customization.
+			if( class_exists( 'WC_Product_Accommodation_Booking' ) )
+				$product                   = new WC_Product_Accommodation_Booking( $product_id );
+			else
+				$product                   = new WC_Product_Booking( $product_id );
+
 			$args['availability_rules']    = array();
 			$args['availability_rules'][0] = $product->get_availability_rules();
 			$args['min_date']              = isset( $_GET['min_date'] ) ? strtotime( $_GET['min_date'] ) : $product->get_min_date();
@@ -185,8 +191,19 @@ class WC_Bookings_WC_Ajax {
 			$args['partially_booked_days'] = $booked['partially_booked_days'];
 			$args['fully_booked_days']     = $booked['fully_booked_days'];
 			$args['unavailable_days']      = $booked['unavailable_days'];
+			
+			error_log("Getting calulation mode...");
+			// Accommodation booking functionality, H&K Camperverhuur customization.
+			$calculation_mode = $product->get_meta( '_wc_booking_block_cost_calculation_mode' );
+			error_log("Calculation mode: {$calculation_mode}.");
+			$current_month = (date("n", $args['min_date'])%12)+1;
+			
+			// if mode = custom : check date
 			$args['restricted_days']       = $product->has_restricted_days() ? $product->get_restricted_days() : false;
-
+			
+			//if ($calculation_mode != "custom")
+			//	$args['restricted_days']   = $product->has_restricted_days() ? $product->get_restricted_days() : false;
+			
 			$buffer_days = array();
 			if ( ! in_array( $product->get_duration_unit(), array( 'minute', 'hour' ) ) ) {
 				$buffer_days = WC_Bookings_Controller::get_buffer_day_blocks_for_booked_days( $product, $args['fully_booked_days'] );
