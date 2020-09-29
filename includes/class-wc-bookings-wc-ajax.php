@@ -195,8 +195,11 @@ class WC_Bookings_WC_Ajax {
 			error_log("Getting calulation mode...");
 			// Accommodation booking functionality, H&K Camperverhuur customization.
 			$calculation_mode = $product->get_meta( '_wc_booking_block_cost_calculation_mode' );
+			
 			error_log("Calculation mode: {$calculation_mode}.");
 			$current_month = (date("n", $args['min_date'])%12)+1;
+			
+			error_log("Current month: {$current_month}");
 			
 			// if mode = custom : check date
 			$args['restricted_days']       = $product->has_restricted_days() ? $product->get_restricted_days() : false;
